@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       cache_version:
-        description: "New @useblacksmith/cache version"
+        description: 'New @useblacksmith/cache version'
         required: true
         type: string
 
@@ -26,7 +26,7 @@ jobs:
           branch_name="bump-cache-version-${{ github.event.inputs.cache_version }}-$timestamp"
           git checkout -b $branch_name
           echo "branch_name=$branch_name" >> $GITHUB_OUTPUT
-    
+
       - name: Update package.json
         run: |
           sed -i 's/"@actions\/cache": "npm:@useblacksmith\/cache@[^"]*"/"@actions\/cache": "npm:@useblacksmith\/cache@${{ github.event.inputs.cache_version }}"/' package.json

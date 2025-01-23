@@ -71,6 +71,10 @@ inputs:
   mvn-toolchain-vendor:
     description: 'Name of Maven Toolchain Vendor if the default name of "${distribution}" is not wanted. See examples of supported syntax in Advanced Usage file'
     required: false
+  mvn-build-cache:
+    description: 'Include Maven build cache (~/.m2/build-cache) in cached paths. Only valid if "cache" input is set to "maven".'
+    required: false
+    default: 'false'
 outputs:
   distribution:
     description: 'Distribution of Java that has been installed'

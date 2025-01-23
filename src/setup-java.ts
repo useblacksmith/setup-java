@@ -76,6 +76,12 @@ async function run() {
 
     await auth.configureAuthentication();
     if (cache && isCacheFeatureAvailable()) {
+      const mvnBuildCache = core.getInput('mvn-build-cache');
+      if (mvnBuildCache === 'true' && cache !== 'maven') {
+        throw new Error(
+          'input error: mvn-build-cache can only be used when cache is set to "maven".'
+        );
+      }
       await restore(cache, cacheDependencyPath);
     }
   } catch (error) {

@@ -90512,7 +90512,18 @@ const CACHE_KEY_PREFIX = 'setup-java';
 const supportedPackageManager = [
     {
         id: 'maven',
-        path: [(0, path_1.join)(os_1.default.homedir(), '.m2', 'repository')],
+        path: [
+            (0, path_1.join)(os_1.default.homedir(), '.m2', 'repository'),
+            // Add build-cache directory if enabled and exists
+            ...(() => {
+                const shouldCacheBuildCache = core.getInput('mvn-build-cache') === 'true';
+                if (!shouldCacheBuildCache) {
+                    return [];
+                }
+                const buildCachePath = (0, path_1.join)(os_1.default.homedir(), '.m2', 'build-cache');
+                return [buildCachePath];
+            })()
+        ],
         // https://github.com/actions/cache/blob/0638051e9af2c23d10bb70fa9beffcad6cff9ce3/examples.md#java---maven
         pattern: ['**/pom.xml']
     },
@@ -90594,6 +90605,7 @@ function restore(id, cacheDependencyPath) {
         core.debug(`primary key is ${primaryKey}`);
         core.saveState(STATE_CACHE_PRIMARY_KEY, primaryKey);
         // No "restoreKeys" is set, to start with a clear cache after dependency update (see https://github.com/actions/setup-java/issues/269)
+        core.info(`Restoring cache for paths: ${packageManager.path.join(', ')}`);
         const matchedKey = yield cache.restoreCache(packageManager.path, primaryKey);
         if (matchedKey) {
             core.saveState(CACHE_MATCHED_KEY, matchedKey);
@@ -90627,6 +90639,7 @@ function save(id) {
             return;
         }
         try {
+            core.info(`Saving cache for paths: ${packageManager.path.join(', ')}`);
             yield cache.saveCache(packageManager.path, primaryKey);
             core.info(`Cache saved with the key: ${primaryKey}`);
         }

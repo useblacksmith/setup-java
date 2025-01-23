@@ -7,6 +7,7 @@ import os from 'os';
 import * as cache from '@actions/cache';
 import * as core from '@actions/core';
 import * as glob from '@actions/glob';
+import fs from 'fs';
 
 const STATE_CACHE_PRIMARY_KEY = 'cache-primary-key';
 const CACHE_MATCHED_KEY = 'cache-matched-key';
@@ -23,7 +24,19 @@ interface PackageManager {
 const supportedPackageManager: PackageManager[] = [
   {
     id: 'maven',
-    path: [join(os.homedir(), '.m2', 'repository')],
+    path: [
+      join(os.homedir(), '.m2', 'repository'),
+      // Add build-cache directory if enabled and exists
+      ...(() => {
+        const shouldCacheBuildCache =
+          core.getInput('mvn-build-cache') === 'true';
+        if (!shouldCacheBuildCache) {
+          return [];
+        }
+        const buildCachePath = join(os.homedir(), '.m2', 'build-cache');
+        return [buildCachePath];
+      })()
+    ],
     // https://github.com/actions/cache/blob/0638051e9af2c23d10bb70fa9beffcad6cff9ce3/examples.md#java---maven
     pattern: ['**/pom.xml']
   },
@@ -113,6 +126,7 @@ export async function restore(id: string, cacheDependencyPath: string) {
   core.saveState(STATE_CACHE_PRIMARY_KEY, primaryKey);
 
   // No "restoreKeys" is set, to start with a clear cache after dependency update (see https://github.com/actions/setup-java/issues/269)
+  core.info(`Restoring cache for paths: ${packageManager.path.join(', ')}`);
   const matchedKey = await cache.restoreCache(packageManager.path, primaryKey);
   if (matchedKey) {
     core.saveState(CACHE_MATCHED_KEY, matchedKey);
@@ -146,6 +160,7 @@ export async function save(id: string) {
     return;
   }
   try {
+    core.info(`Saving cache for paths: ${packageManager.path.join(', ')}`);
     await cache.saveCache(packageManager.path, primaryKey);
     core.info(`Cache saved with the key: ${primaryKey}`);
   } catch (error) {
