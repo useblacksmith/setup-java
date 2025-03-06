@@ -125645,7 +125645,9 @@ function createAuthenticationSettings(id, username, password, settingsDirectory,
         // when an alternate m2 location is specified use only that location (no .m2 directory)
         // otherwise use the home/.m2/ path
         yield io.mkdirP(settingsDirectory);
+        core.info(`Created settings directory: ${settingsDirectory}`);
         yield write(settingsDirectory, generate(id, username, password, gpgPassphrase), overwriteSettings);
+        core.info(`Wrote ${constants.MVN_SETTINGS_FILE} to ${settingsDirectory}`);
     });
 }
 exports.createAuthenticationSettings = createAuthenticationSettings;
@@ -128042,6 +128044,7 @@ function run() {
             core.info(`##[add-matcher]${path.join(matchersPath, 'java.json')}`);
             yield auth.configureAuthentication();
             if (cache && (0, util_1.isCacheFeatureAvailable)()) {
+                core.info('Cache is enabled; restoring');
                 yield (0, cache_1.restore)(cache, cacheDependencyPath);
             }
         }
