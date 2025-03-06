@@ -76,6 +76,7 @@ async function run() {
 
     await auth.configureAuthentication();
     if (cache && isCacheFeatureAvailable()) {
+      core.info('Cache is enabled; restoring');
       await restore(cache, cacheDependencyPath);
     }
   } catch (error) {

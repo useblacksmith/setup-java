@@ -60,11 +60,13 @@ export async function createAuthenticationSettings(
   // when an alternate m2 location is specified use only that location (no .m2 directory)
   // otherwise use the home/.m2/ path
   await io.mkdirP(settingsDirectory);
+  core.info(`Created settings directory: ${settingsDirectory}`);
   await write(
     settingsDirectory,
     generate(id, username, password, gpgPassphrase),
     overwriteSettings
   );
+  core.info(`Wrote ${constants.MVN_SETTINGS_FILE} to ${settingsDirectory}`);
 }
 
 // only exported for testing purposes
